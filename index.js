@@ -13,7 +13,7 @@ const { isatty } = require("tty");
 const app = express();
 
 // middlewares
-app.use(cors());
+app.use(cors({ origin: 'https://frontend-blog-project-one.vercel.app' }));
 app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
