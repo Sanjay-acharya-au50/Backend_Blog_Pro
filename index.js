@@ -110,10 +110,7 @@ app.post("/login", async (req, res) => {
       // jenerate a token for logged in user
       const loggedUser = jwt.sign(
         {
-          id: foundUser._id,
-          userName: foundUser.userName,
-          email,
-          avatar: foundUser.avatar,
+          id: foundUser._id,userName: foundUser.userName,email,avatar: foundUser.avatar,
         },
         secret,
         {}
@@ -170,7 +167,7 @@ app.get("/profile", (req, res) => {
 // Logout post route
 app.post("/logout", (req, res) => {
   try {
-    res.cookie("loggedUser", " " ,{ secure: true }).status(224).json("User Logout Succesfully");
+    res.cookie("loggedUser", " " ,{ secure: true, sameSite: 'none',expires:new Date(0)}).status(224).json("User Logout Succesfully");
   } catch (error) {
     res.json(error);
   }
