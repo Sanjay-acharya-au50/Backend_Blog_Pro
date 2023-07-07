@@ -170,7 +170,7 @@ app.get("/profile", (req, res) => {
 // Logout post route
 app.post("/logout", (req, res) => {
   try {
-    res.clearCookie("loggedUser").status(224).josn("User Logout Succesfully");
+    res.clearCookie("loggedUser", { secure: true }).status(224).json("User Logout Succesfully");
   } catch (error) {
     res.json(error);
   }
