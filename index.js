@@ -118,6 +118,7 @@ app.post("/login", async (req, res) => {
         secret,
         { expiresIn: "1h" }
       );
+      console.log(loggedUser);
 
       // check if the token is generated or not
       if (!loggedUser) {
