@@ -13,7 +13,7 @@ const { isatty } = require("tty");
 const app = express();
 
 // middlewares
-app.use(cors({ credentials: true, origin: "http://localhost:5000" }));
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
@@ -123,8 +123,10 @@ app.post("/login", async (req, res) => {
         return res.json("token generate issue");
       }
 
-      res
-        .cookie("loggedUser", loggedUser)
+        res.cookie("loggedUser", loggedUser, {
+          sameSite: 'none',
+          secure: true,
+        })
         .status(224)
         .json({ id: foundUser._id, userName: foundUser.userName, email });
     }
