@@ -116,7 +116,7 @@ app.post("/login", async (req, res) => {
           avatar: foundUser.avatar,
         },
         secret,
-        { expiresIn: "1h" }
+        {}
       );
       console.log(loggedUser);
 
