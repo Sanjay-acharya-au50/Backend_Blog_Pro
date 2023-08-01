@@ -8,13 +8,11 @@ const Post = require("./model/postModel");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const fs = require("fs");
-const { isatty } = require("tty");
 
 const app = express();
 
 // middlewares
-app.use(cors({ origin: 'https://frontend-blog-project-one.vercel.app',
-credentials:true}));
+app.use(cors({ origin: process.env.FRONTEND_URI, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
@@ -28,14 +26,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-const secret = "anvadf215af4df94vba98v46a1v9a8df9a9d8gfa8gv9a4v";
-
-// home test
+// home route for testing
 app.get("/", (req, res) => {
   res.json({ success: "hi there" });
 });
 
-// Signup post route
+// User signup post route
 app.post("/signup", upload.single("avatar"), async (req, res) => {
   const { originalname, path } = req.file;
   const { userName, email, password } = req.body;
@@ -82,7 +78,7 @@ app.post("/signup", upload.single("avatar"), async (req, res) => {
   }
 });
 
-// Login post route
+// User login post route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -110,9 +106,12 @@ app.post("/login", async (req, res) => {
       // jenerate a token for logged in user
       const loggedUser = jwt.sign(
         {
-          id: foundUser._id,userName: foundUser.userName,email,avatar: foundUser.avatar,
+          id: foundUser._id,
+          userName: foundUser.userName,
+          email,
+          avatar: foundUser.avatar,
         },
-        secret,
+        process.env.JWT_SECRET,
         {}
       );
       console.log(loggedUser);
@@ -122,8 +121,9 @@ app.post("/login", async (req, res) => {
         return res.json("token generate issue");
       }
 
-        res.cookie("loggedUser", loggedUser, {
-          sameSite: 'none',
+      res
+        .cookie("loggedUser", loggedUser, {
+          sameSite: "none",
           secure: true,
         })
         .status(224)
@@ -146,7 +146,7 @@ app.get("/profile", (req, res) => {
   const { loggedUser } = req.cookies;
   try {
     if (loggedUser) {
-      const verifyUser = jwt.verify(loggedUser, secret);
+      const verifyUser = jwt.verify(loggedUser, process.env.JWT_SECRET);
 
       // check if the token is verified or not
       if (!verifyUser) {
@@ -167,13 +167,20 @@ app.get("/profile", (req, res) => {
 // Logout post route
 app.post("/logout", (req, res) => {
   try {
-    res.cookie("loggedUser", " " ,{ secure: true, sameSite: 'none',expires:new Date(0)}).status(224).json("User Logout Succesfully");
+    res
+      .cookie("loggedUser", " ", {
+        secure: true,
+        sameSite: "none",
+        expires: new Date(0),
+      })
+      .status(224)
+      .json("User Logout Succesfully");
   } catch (error) {
     res.json(error);
   }
 });
 
-// create post route
+// create a new post route
 app.post("/create_post", upload.single("cover"), async (req, res) => {
   const { originalname, path } = req.file;
   const { title, summary, content } = req.body;
@@ -187,7 +194,7 @@ app.post("/create_post", upload.single("cover"), async (req, res) => {
     fs.renameSync(path, newPath);
 
     if (loggedUser) {
-      const verifyUser = jwt.verify(loggedUser, secret);
+      const verifyUser = jwt.verify(loggedUser, process.env.JWT_SECRET);
 
       // check if the token is verified or not
       if (!verifyUser) {
@@ -217,6 +224,7 @@ app.post("/create_post", upload.single("cover"), async (req, res) => {
   }
 });
 
+// get all the post from database
 app.get("/posts", async (req, res) => {
   try {
     const posts = await Post.find()
@@ -233,6 +241,7 @@ app.get("/posts", async (req, res) => {
   }
 });
 
+// get route to get a single post from the database
 app.get("/single_post/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -246,6 +255,7 @@ app.get("/single_post/:id", async (req, res) => {
   }
 });
 
+// put route to edit a specific route
 app.put("/post/edit/:id", upload.single("cover"), async (req, res) => {
   const { id } = req.params;
   const { loggedUser } = req.cookies;
@@ -262,7 +272,7 @@ app.put("/post/edit/:id", upload.single("cover"), async (req, res) => {
     }
 
     if (loggedUser) {
-      const verifyUser = jwt.verify(loggedUser, secret);
+      const verifyUser = jwt.verify(loggedUser, process.env.JWT_SECRET);
 
       // check if the token is verified or not
       if (!verifyUser) {
@@ -301,6 +311,7 @@ app.put("/post/edit/:id", upload.single("cover"), async (req, res) => {
   }
 });
 
+// delete route to delete a specific post
 app.delete("/post/delete/:id", async (req, res) => {
   const { id } = req.params;
   console.log(id);
@@ -308,7 +319,7 @@ app.delete("/post/delete/:id", async (req, res) => {
 
   try {
     if (loggedUser) {
-      const verifyUser = jwt.verify(loggedUser, secret);
+      const verifyUser = jwt.verify(loggedUser, process.env.JWT_SECRET);
       console.log(verifyUser);
       // check if the token is verified or not
       if (!verifyUser) {
